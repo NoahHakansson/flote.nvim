@@ -1,3 +1,7 @@
+local defaults = {
+	border = "solid",
+}
+
 local M = {}
 
 local check_cache_dir = function()
@@ -20,7 +24,7 @@ local check_note_file = function(file)
 	return note_file_path
 end
 
-local open_float = function(file, border)
+local open_float = function(file, border, winhighlight)
 	local ui = vim.api.nvim_list_uis()[1]
 	local width = math.floor((ui.width * 0.5) + 0.5)
 	local height = math.floor((ui.height * 0.5) + 0.5)
@@ -35,6 +39,7 @@ local open_float = function(file, border)
 		row = (ui.height - height) / 2,
 		focusable = false,
 		style = "minimal",
+		winhighlight = winhighlight,
 		border = border,
 	})
 
@@ -42,18 +47,17 @@ local open_float = function(file, border)
 	vim.api.nvim_buf_set_option(note_buf, "bufhidden", "wipe")
 end
 
-M.setup = function(border)
+M.setup = function(opts)
 	M.flote_cache_dir = check_cache_dir()
 
-	if not border then
-		border = "solid"
-	end
+	local border = opts.border or "solid"
+	local winhighlight = opts.winhighlight or "Normal:FloatPadding"
 
-	vim.api.nvim_create_user_command("Flote", function(opts)
-		if opts.fargs[1] == "global" then
+	vim.api.nvim_create_user_command("Flote", function(args)
+		if args.fargs[1] == "global" then
 			local note_file = check_note_file("flote-global.md")
 			open_float(note_file)
-		elseif opts.fargs[1] == "manage" then
+		elseif args.fargs[1] == "manage" then
 			open_float(M.flote_cache_dir)
 		else
 			local cwd = vim.fs.normalize(vim.fn.getcwd())
@@ -61,7 +65,7 @@ M.setup = function(border)
 			local parent_base_name = vim.fs.basename(vim.fs.dirname(cwd))
 			local file_name = parent_base_name .. "_" .. base_name .. ".md"
 			local note_file = check_note_file(file_name)
-			open_float(note_file, border)
+			open_float(note_file, border, winhighlight)
 		end
 	end, {
 		nargs = "?",
