@@ -33,8 +33,6 @@ local open_float = function(file, style, border)
 	local note_buf = vim.api.nvim_create_buf(false, true)
 
 	vim.api.nvim_open_win(note_buf, true, {
-		title = "Flote",
-		title_pos = "center",
 		relative = "editor",
 		width = width,
 		height = height,
